@@ -111,6 +111,10 @@ class MainActivity : AppCompatActivity() {
             webViewDialog.dismiss()
             retrieveUser(verificationID)
         }
+        else if (uri.host == "exit") {
+            webViewDialog.dismiss()
+            showAlert()
+        }
     }
 
     // Calls the /v1/verification_sessions endpoint to fetch the users verification data
