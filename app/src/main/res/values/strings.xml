@@ -3,4 +3,7 @@
     <string name="verify">Verify</string>
     <string name="verified_text">Verification response</string>
     <string name="verified_status"> Verification status: </string>
+    <string name="permission_required">Camera access is required to display the camera preview.</string>
+    <string name="ok">OK</string>
+    <string name="permission_granted">Permission is granted. You could use the camera now.</string>
 </resources>
