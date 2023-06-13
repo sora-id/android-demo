@@ -21,6 +21,8 @@ class API {
     fun createSession(callback: (JSONObject?, Exception?) -> Unit) {
         val payload = JSONObject()
         payload.put("is_webview", "true")
+        payload.put("project_id", BuildConfig.PROJECT_ID)
+        payload.put("auth_type", "email")
         request(null, Method.POST, payload, callback)
     }
 
