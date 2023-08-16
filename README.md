@@ -42,6 +42,49 @@ You can also specify the desired authorization type, (one of `email` or `phone`)
 ### Requesting permissions:
 If you wish to use Sora's government ID scan or selfie verification functions, you will need to handle camera permissions in your Android application. At minimum, you need to request `android.permission.CAMERA` and `android.permission.READ_EXTERNAL_STORAGE`. See `requestPermissionLauncher` in `MainActivity.kt` for an example of how to handle these permissions.
 
+### Selfie Verification:
+Sora ID uses an external provider for selfie verification. You will need to perform the following steps for selfie verification to work.
+
+The Android SDK is provided in Android Library Project (AAR) format as a Maven dependency.
+
+- Open the build.gradle file. Typically, this is the build.gradle file for the app module.
+
+- Add maven to the repositories section in your build.gradle file:
+```
+repositories {
+    maven { url 'https://raw.githubusercontent.com/iProov/android/master/maven/' }
+}
+```
+- Add the SDK version to the dependencies section in your build.gradle file:
+```
+dependencies {
+    implementation('com.iproov.sdk:iproov:9.0.0-beta')
+}
+```
+
+- Add support for Java 8 to your build.gradle file. Skip this step if Java 8 is enabled:
+```
+android {
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+```
+- Build your project
+
+#### Initialize the selfie provider
+- Import `com.iproov.sdk.NativeBridge` in the file where your webView is declared
+- Enable JavaScript execution in your WebView:
+`webView.settings.javaScriptEnabled = true`
+- As early as possible in the WebView's lifecycle (e.g. in Activity.onCreate()) call the following:
+`NativeBridge().install(webView)`
+- Clean up resources at the end of your WebView's lifecycle (e.g. in Activity.onDestroy()) by calling:
+`NativeBridge.uninstall(webView)`
+
+
+
+#### Government ID Upload
 When a user uploads a photo for their government ID, the webView uses a basic hidden `<input>` element. You need to handle the FileChooser request in your application and create the correct intent to either upload or capture a photo. We are working to develop this into a JavaScript interface, but for the moment, to detect whether the intent should open the camera directly or give users the ability to upload a previously taken photo, you can check the `<input>` for the attribute `capture`. 
 ```
 webView?.evaluateJavascript("document.getElementById('cameraFileInput').hasAttribute('capture')")
