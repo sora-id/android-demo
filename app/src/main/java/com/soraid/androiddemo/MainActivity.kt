@@ -30,6 +30,7 @@ import com.soraid.androiddemo.response.Document
 import com.soraid.androiddemo.response.Traits
 import com.soraid.androiddemo.response.VerificationSession
 import com.soraid.androiddemo.response.parseTraits
+import com.iproov.sdk.NativeBridge
 import org.json.JSONObject
 import java.io.File
 import java.text.SimpleDateFormat
@@ -140,24 +141,26 @@ class MainActivity : AppCompatActivity() {
             webViewDialog.setContentView(R.layout.web_view)
 
             val webView: WebView = webViewDialog.findViewById(R.id.webview)
-
             webView.settings.javaScriptEnabled = true
             webView.settings.domStorageEnabled = true
+            webView.settings.mediaPlaybackRequiresUserGesture = false
             webView.settings.allowFileAccess = true
             webView.settings.allowContentAccess = true
             webView.settings.javaScriptCanOpenWindowsAutomatically = true
             webView.settings.builtInZoomControls = true
+            var selfieBridge = NativeBridge()
+            selfieBridge.install(webView, false)
 
             webView.webViewClient = object : WebViewClient() {
                 @Deprecated("Deprecated in Java")
                 override fun shouldOverrideUrlLoading(wv: WebView, url: String): Boolean {
                     Log.i(TAG, "shouldOverrideUrlLoading ===> $url")
-                    if (Uri.parse(url).host == BuildConfig.BASE_URL) {
-                        return false
-                    } else if (Uri.parse(url).scheme == "soraid") {
+                    if (Uri.parse(url).scheme == "soraid") {
                         // If the WebView detects a soraid:// redirect it triggers the code to fetch the users verification data
-                        this@MainActivity.processRedirect(Uri.parse(url))
+                        this@MainActivity.processRedirect(Uri.parse(url), selfieBridge, webView)
                         return true
+                    } else if (Uri.parse(url).host.toString() in BuildConfig.BASE_URL || Uri.parse(url).host == BuildConfig.BASE_URL) {
+                        return false
                     }
                     return true
                 }
@@ -221,12 +224,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Parses the soraid:// redirect uri and checks for success
-    private fun processRedirect(uri: Uri) {
+    private fun processRedirect(uri: Uri, selfieBridge: NativeBridge, webView: WebView) {
         if (uri.host == "success") {
+            selfieBridge.uninstall(webView)
             webViewDialog.dismiss()
             retrieveUser(verificationID)
         }
         else if (uri.host == "exit") {
+            selfieBridge.uninstall(webView)
             webViewDialog.dismiss()
             showAlert()
         }
